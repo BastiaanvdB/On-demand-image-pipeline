@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: on-demand-build-base-image
+spec:
+  params:
+    - description: Name of the ImageStream
+      name: imagestream-name
+      type: string
+  tasks:
+    - name: checkout-base-images
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      params:
+      - name: url
+        value: "git@changeme.nl:openshift/openshift-base-images.git"
+      - name: revision
+        value: "master"
+      - name: sslVerify
+        value: "false"
+      - name: deleteExisting
+        value: "true"
+      workspaces:
+      - name: output
+        workspace: base-images-git
+
+    - name: check-imagestream
+      params:
+        - name: imagestream-name
+          value: "$(params.imagestream-name)"
+      taskRef:
+        kind: Task
+        name: check-imagestream
+      workspaces:
+      - name: base-images-git
+        workspace: base-images-git
+      runAfter:
+      - checkout-base-images
+
+    - name: build-base-images
+      params:
+        - name: imagestream-name
+          value: "$(params.imagestream-name)"
+      taskRef:
+        kind: Task
+        name: build-base-images
+      workspaces:
+      - name: base-images-git
+        workspace: base-images-git
+      runAfter:
+      - check-imagestream
+
+  workspaces:
+  - name: base-images-git
+
