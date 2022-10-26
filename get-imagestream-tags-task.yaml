@@ -19,13 +19,17 @@ spec:
 
         echo "Checking tags for: $(params.imagestream-name)"
         
-        IMAGE_TAGS=$(oc get imagestreams "$(params.imagestream-name)" -o jsonpath='{range .status.tags[*]}{.tag}{";"}')
-
-
-        echo "Given tag: $(params.imagestream-tag)"
-
+        IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
         
-        echo $IMAGE_TAGS
+        echo "Given tag: $(params.imagestream-tag)"
+        
+        if[]
+        then
+        
+        for TAG in "${IMAGE_TAGS[@]}"
+        do
+          echo "$TAG"
+        done
 
 
       image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
