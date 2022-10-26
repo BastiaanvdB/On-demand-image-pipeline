@@ -7,6 +7,9 @@ spec:
     - description: Name of the ImageStream
       name: imagestream-name
       type: string
+    - description: ImageStreamTag of the ImageStream(Optional)
+      name: imagestream-tag
+      type: string
   tasks:
     - name: checkout-base-images
       taskRef:
@@ -14,9 +17,9 @@ spec:
         name: git-clone
       params:
       - name: url
-        value: "git@changeme.nl:openshift/openshift-base-images.git"
+        value: "git@gitlab.com:hcs-company/hcs-base-updater.git"
       - name: revision
-        value: "master"
+        value: "main"
       - name: sslVerify
         value: "false"
       - name: deleteExisting
@@ -38,10 +41,27 @@ spec:
       runAfter:
       - checkout-base-images
 
+    - name: get-imagestream-tags
+      params:
+        - name: imagestream-name
+          value: "$(params.imagestream-name)"
+        - name: imagestream-tag
+          value: "$(params.imagestream-tag)"
+      taskRef:
+        kind: Task
+        name: get-imagestream-tags
+      workspaces:
+        - name: base-images-git
+          workspace: base-images-git
+      runAfter:
+        - check-imagestream
+
     - name: build-base-images
       params:
         - name: imagestream-name
           value: "$(params.imagestream-name)"
+        - name: imagestream-tags
+          value: "$(tasks.get-imagestream-tags.results.imagestream-tags"
       taskRef:
         kind: Task
         name: build-base-images
@@ -49,7 +69,7 @@ spec:
       - name: base-images-git
         workspace: base-images-git
       runAfter:
-      - check-imagestream
+      - get-imagestream-tags
 
   workspaces:
   - name: base-images-git
