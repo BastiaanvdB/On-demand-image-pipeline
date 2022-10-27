@@ -16,22 +16,24 @@ spec:
   steps:
     - script: |
         #!/bin/bash
-
+        
+        OUTPUT_TAGS=()
+        
         echo "Checking tags for: $(params.imagestream-name)"
         
         IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
         
         if [ -n "$(params.imagestream-tag)" ]; then
-          
+          echo "Checking provided tag"
+  
           if [[ ! " ${IMAGE_TAGS[*]} " =~ "$(params.imagestream-tag)" ]]; then
             echo "Invalid tag ($(params.imagestream-tag)) provided!"
           fi
+          
+          echo "Provided tag correct"         
         
-          echo "Specified tag: $(params.imagestream-tag)"
-
-        else
-          echo "No tag specified"
-        
+          OUTPUT_TAGS = 
+    
         fi
         
         
