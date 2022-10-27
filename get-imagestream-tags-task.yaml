@@ -21,10 +21,19 @@ spec:
         
         IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
         
-        echo "Given tag: $(params.imagestream-tag)"
+        if [ -n "$(params.imagestream-tag)" ]; then
+          
+          if [[ ! " ${IMAGE_TAGS[*]} " =~ "$(params.imagestream-tag)" ]]; then
+            echo "Invalid tag ($(params.imagestream-tag)) provided!"
+          fi
         
-        if[]
-        then
+          echo "Specified tag: $(params.imagestream-tag)"
+
+        else
+          echo "No tag specified"
+        
+        fi
+        
         
         for TAG in "${IMAGE_TAGS[@]}"
         do
