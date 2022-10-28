@@ -28,8 +28,9 @@ spec:
   
           if [[ ! " ${IMAGE_TAGS[*]} " =~ "$(params.imagestream-tag)" ]]; then
             echo "Invalid tag ($(params.imagestream-tag)) provided!"
+            exit 1
           fi
-          
+           
           echo "Provided tag correct"         
         
           OUTPUT_TAGS = 
