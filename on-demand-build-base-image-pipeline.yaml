@@ -61,7 +61,7 @@ spec:
         - name: imagestream-name
           value: "$(params.imagestream-name)"
         - name: imagestream-tags
-          value: "$(tasks.get-imagestream-tags.results.imagestream-tags"
+          value: "$(tasks.get-imagestream-tags.results.imagestream-tags)"
       taskRef:
         kind: Task
         name: build-base-images

@@ -12,7 +12,6 @@ spec:
       type: string
   results:
     - name: imagestream-tags
-      type: string
   steps:
     - script: |
         #!/bin/bash
@@ -33,16 +32,40 @@ spec:
            
           echo "Provided tag correct"         
         
-          OUTPUT_TAGS = 
-    
+          OUTPUT_TAGS+="$(params.imagestream-tag)"
+        
+        else
+          for TAG in "${IMAGE_TAGS[@]}"
+          do
+        
+          if [ -n "$TAG" ]; then
+            OUTPUT_TAGS+=("$TAG")
+          fi
+          
+          done
         fi
         
+        OUTPUT_JSON="["
         
-        for TAG in "${IMAGE_TAGS[@]}"
+        INDEX=0
+        
+        for TAG in "${OUTPUT_TAGS[@]}"
         do
-          echo "$TAG"
+        
+        if [[ "$INDEX" -eq 0 ]]; then
+        
+          OUTPUT_JSON+='{"name":"'"${TAG}"'"}'
+        
+        else
+          OUTPUT_JSON+=', {"name":"'"${TAG}"'"}'
+        fi
+
+        INDEX+=1
         done
 
+        OUTPUT_JSON+="]"
+
+        echo "$OUTPUT_JSON" | tee $(results.imagestream-tags.path)
 
       image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
       name: check-imagestream
