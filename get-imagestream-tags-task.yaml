@@ -43,8 +43,8 @@ spec:
           fi
           
           done
-        
-          echo "emitting tags"
+                
+          echo "emitting found tags"
         fi
         
         INDEX=0
