@@ -20,7 +20,7 @@ spec:
         
         echo "Checking tags for: $(params.imagestream-name)"
         
-        IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
+        IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -n openshift -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
         
         if [ -n "$(params.imagestream-tag)" ]; then
           echo "Checking provided tag"
@@ -45,8 +45,6 @@ spec:
           done
         fi
         
-        OUTPUT_JSON="["
-        
         INDEX=0
         
         for TAG in "${OUTPUT_TAGS[@]}"
@@ -54,21 +52,19 @@ spec:
         
         if [[ "$INDEX" -eq 0 ]]; then
         
-          OUTPUT_JSON+='{"name":"'"${TAG}"'"}'
+          OUTPUT_JSON+='{\"name\": \"'"$TAG"'\"}'
         
         else
-          OUTPUT_JSON+=', {"name":"'"${TAG}"'"}'
+          OUTPUT_JSON+=',{\"name\": \"'"$TAG"'\"}'
         fi
 
         INDEX+=1
         done
-
-        OUTPUT_JSON+="]"
-
-        echo "$OUTPUT_JSON" | tee $(results.imagestream-tags.path)
+        
+        echo '"['"$OUTPUT_JSON"']"' | tee $(results.imagestream-tags.path)
 
       image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
-      name: check-imagestream
+      name: check-imagestream-tags
       resources: {}
       workingDir: $(workspaces.base-images-git.path)
   workspaces:

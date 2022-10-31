@@ -7,7 +7,7 @@ spec:
     - name: imagestream-name
       value: python
     - name: imagestream-tag
-      value: 3.8
+      value:
   pipelineRef:
     name: on-demand-build-base-image
   workspaces:
