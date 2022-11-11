@@ -1,0 +1,73 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-imagestream-tags-v2
+spec:
+  params:
+    - description: Name of the imageStream
+      name: imagestream-name
+      type: string
+    - description: Tags of the imageStream
+      name: imagestream-tag
+      type: string
+  results:
+    - name: imagestream-tags
+  steps:
+    - script: |
+        #!/bin/bash
+        
+        OUTPUT_TAGS=()
+
+        echo "Checking tags for: $(params.imagestream-name)"
+        
+        IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -n openshift -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
+        
+        if [ -n "$(params.imagestream-tag)" ]; then
+          echo "Checking provided tag"
+  
+          if [[ ! " ${IMAGE_TAGS[*]} " =~ "$(params.imagestream-tag)" ]]; then
+            echo "Invalid tag ($(params.imagestream-tag)) provided!"
+            exit 1
+          fi
+           
+          echo "Provided tag ($(params.imagestream-tag)) correct"         
+        
+          OUTPUT_TAGS+="$(params.imagestream-tag)"
+          echo "emitting tag"
+        else
+          for TAG in "${IMAGE_TAGS[@]}"
+          do
+        
+          if [ -n "$TAG" ]; then
+            OUTPUT_TAGS+=("$TAG")
+          fi
+          
+          done
+                
+          echo "emitting found tags"
+        fi
+        
+        INDEX=0
+        
+        for TAG in "${OUTPUT_TAGS[@]}"
+        do
+        
+        if [[ "$INDEX" -eq 0 ]]; then
+          OUTPUT_JSON+='{\"name\": \"'"$TAG"'\"}'
+        else
+          OUTPUT_JSON+=',{\"name\": \"'"$TAG"'\"}'
+        fi
+
+        INDEX+=1
+        done
+        
+        echo '{ "foo": 123, "bar": 456 }' | jq
+        
+        echo '"['"$OUTPUT_JSON"']"' >> $(results.imagestream-tags.path)
+
+      image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
+      name: check-imagestream-tags
+      resources: {}
+      workingDir: $(workspaces.base-images-git.path)
+  workspaces:
+  - name: base-images-git

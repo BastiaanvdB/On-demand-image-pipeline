@@ -7,9 +7,9 @@ spec:
     - name: imagestream-name
       value: python
     - name: imagestream-tag
-      value:
+      value: latest
   pipelineRef:
-    name: on-demand-build-base-image
+    name: on-demand-build-base-image-v2
   workspaces:
     - name: base-images-git
       volumeClaimTemplate:
