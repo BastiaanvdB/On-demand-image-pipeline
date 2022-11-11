@@ -49,7 +49,7 @@ spec:
           value: "$(params.imagestream-tag)"
       taskRef:
         kind: Task
-        name: get-imagestream-tags
+        name: get-imagestream-tags-v2
       workspaces:
         - name: base-images-git
           workspace: base-images-git
@@ -61,7 +61,7 @@ spec:
         - name: imagestream-name
           value: "$(params.imagestream-name)"
         - name: imagestream-tags
-          value: "$(tasks.get-imagestream-tags.results.imagestream-tags)"
+          value: "$(tasks.get-imagestream-tags-v2.results.imagestream-tags)"
       taskRef:
         kind: Task
         name: build-base-images
@@ -69,7 +69,7 @@ spec:
       - name: base-images-git
         workspace: base-images-git
       runAfter:
-      - get-imagestream-tags
+      - get-imagestream-tags-v2
 
   workspaces:
   - name: base-images-git
