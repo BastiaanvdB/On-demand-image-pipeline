@@ -6,8 +6,10 @@ spec:
   params:
     - name: imagestream-name
       value: python
-    - name: imagestream-tag
-      value: latest
+    - name: input-tag-array
+      value:
+        - "latest"
+        - "test"
   pipelineRef:
     name: on-demand-build-base-image
   workspaces:

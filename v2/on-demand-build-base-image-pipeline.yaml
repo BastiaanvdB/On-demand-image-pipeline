@@ -4,12 +4,13 @@ metadata:
   name: on-demand-build-base-image
 spec:
   params:
-    - description: Name of the ImageStream
-      name: imagestream-name
+    - name: imagestream-name
+      description: Name of the ImageStream
       type: string
-    - description: ImageStreamTag of the ImageStream(Optional)
-      name: imagestream-tag
-      type: string
+    - name: input-tag-array
+      description: ImageStreamTag of the ImageStream(Optional)
+      type: array
+      default: []
   tasks:
     - name: checkout-base-images
       taskRef:
@@ -45,8 +46,8 @@ spec:
       params:
         - name: imagestream-name
           value: "$(params.imagestream-name)"
-        - name: imagestream-tag
-          value: "$(params.imagestream-tag)"
+        - name: input-tag-array
+          value: ["$(params.input-tag-array[*])"]
       taskRef:
         kind: Task
         name: get-imagestream-tags

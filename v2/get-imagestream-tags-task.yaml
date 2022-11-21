@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-imagestream-tags
+spec:
+  params:
+    - name: imagestream-name
+      description: Name of the imageStream
+      type: string
+    - name: input-tag-array
+      description: Tags of the imageStream
+      type: array
+  results:
+    - name: imagestream-tags
+  steps:
+    - script: |
+        #!/bin/bash
+        for TAG in "${params.input-tag-array[@]}"
+        do
+        echo "$TAG"
+        done
+
+      image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
+      name: check-imagestream-tags
+      resources: {}
+      workingDir: $(workspaces.base-images-git.path)
+  workspaces:
+  - name: base-images-git
