@@ -9,20 +9,79 @@ spec:
       type: string
     - name: input-tag-array
       description: Tags of the imageStream
-      type: array
+      default: [ ]
   results:
     - name: imagestream-tags
   steps:
     - script: |
         #!/bin/bash
-        for TAG in "${params.input-tag-array[@]}"
+        OUTPUT_TAGS=()
+        FAULTY_TAGS=()
+        INPUT_TAGS=("$@") 
+        
+        echo "Checking tags for: $(params.imagestream-name)"
+        
+        IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -n openshift -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
+        
+        if [ ${#INPUT_TAGS[@]} -eq 0 ]; then
+          echo "No tags provided"
+        
+          for TAG in "${IMAGE_TAGS[@]}"
+          do
+        
+          if [ -n "$TAG" ]; then
+            OUTPUT_TAGS+=("$TAG")
+          fi
+        
+          done
+        
+          echo "Emitting found tags"
+        else
+        echo "Checking provided tags"
+        
+          for TAG in "${INPUT_TAGS[@]}"
+          do
+        
+          if [[ ! " ${IMAGE_TAGS[*]} " =~ "$TAG" ]]; then
+          FAULTY_TAGS+=("$TAG")
+          fi
+          
+          OUTPUT_TAGS+=("$TAG")
+          
+          done
+        
+          if [ -n "$FAULTY_TAGS" ]; then
+            
+            echo -n "Faulty tags provided:"
+            for TAG in "${FAULTY_TAGS[@]}"
+            do
+            echo -n " $TAG |"
+            done
+            exit 1
+          fi
+        
+        echo "Emitting provided tags"
+        fi
+        
+        INDEX=0
+        
+        for TAG in "${OUTPUT_TAGS[@]}"
         do
-        echo "$TAG"
-        done
+        
+        if [[ "$INDEX" -eq 0 ]]; then
+          OUTPUT_JSON+='{\"name\": \"'"$TAG"'\"}'
+        else
+          OUTPUT_JSON+=',{\"name\": \"'"$TAG"'\"}'
+        fi
 
+        INDEX+=1
+        done
+        
+        echo '"['"$OUTPUT_JSON"']"' >> $(results.imagestream-tags.path)
       image: "image-registry.openshift-image-registry.svc:5000/openshift/cli:latest"
+      args: [ "$(params.input-tag-array[*])" ]
       name: check-imagestream-tags
-      resources: {}
+      resources: { }
       workingDir: $(workspaces.base-images-git.path)
   workspaces:
-  - name: base-images-git
+    - name: base-images-git

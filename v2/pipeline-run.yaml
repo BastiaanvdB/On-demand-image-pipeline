@@ -9,7 +9,6 @@ spec:
     - name: input-tag-array
       value:
         - "latest"
-        - "test"
   pipelineRef:
     name: on-demand-build-base-image
   workspaces:

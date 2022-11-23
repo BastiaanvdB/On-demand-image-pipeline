@@ -15,7 +15,7 @@ spec:
     - name: checkout-base-images
       taskRef:
         kind: ClusterTask
-        name: git-clone
+        name: git-clone-1-7-0
       params:
       - name: url
         value: "git@gitlab.com:hcs-company/hcs-base-updater.git"
