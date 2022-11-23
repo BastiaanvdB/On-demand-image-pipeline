@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: build-base-image-
+spec:
+  params:
+    - name: imagestream-name
+      value: python
+    - name: input-tag-array
+      value:
+        - "latest"
+        - "3.7"
+  pipelineRef:
+    name: on-demand-build-base-image
+  workspaces:
+    - name: base-images-git
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
