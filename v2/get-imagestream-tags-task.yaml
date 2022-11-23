@@ -16,7 +16,7 @@ spec:
     - script: |
         #!/bin/bash
         OUTPUT_TAGS=()
-        FAULTY_TAGS=()
+        INVALID_TAGS=()
         INPUT_TAGS=("$@") 
         
         echo "Checking tags for: $(params.imagestream-name)"
@@ -24,7 +24,7 @@ spec:
         IFS=';' read -r -a IMAGE_TAGS <<< "$(oc get imagestreams "$(params.imagestream-name)" -n openshift -o jsonpath='{range .status.tags[*]}{.tag}{";"}')"
         
         if [ ${#INPUT_TAGS[@]} -eq 0 ]; then
-          echo "No tags provided"
+          echo "No tag(s) provided"
         
           for TAG in "${IMAGE_TAGS[@]}"
           do
@@ -35,32 +35,41 @@ spec:
         
           done
         
-          echo "Emitting found tags"
+          echo "Emitting found tag(s)"
         else
-        echo "Checking provided tags"
+        echo "Checking provided tag(s)"
         
           for TAG in "${INPUT_TAGS[@]}"
           do
         
           if [[ ! " ${IMAGE_TAGS[*]} " =~ "$TAG" ]]; then
-          FAULTY_TAGS+=("$TAG")
+          INVALID_TAGS+=("$TAG")
           fi
-          
+        
           OUTPUT_TAGS+=("$TAG")
-          
+        
           done
         
-          if [ -n "$FAULTY_TAGS" ]; then
-            
-            echo -n "Faulty tags provided:"
-            for TAG in "${FAULTY_TAGS[@]}"
+          if [ -n "INVALID_TAGS" ]; then
+            INDEX=0
+        
+            echo -n "Invalid tag(s) provided: "
+            for TAG in "${INVALID_TAGS[@]}"
             do
-            echo -n " $TAG |"
+        
+            if [[ "$INDEX" -gt 0 ]]; then
+              echo -n " | "
+            fi
+        
+            echo -n "$TAG"
+        
+            INDEX+=1
+        
             done
             exit 1
           fi
         
-        echo "Emitting provided tags"
+        echo "Emitting provided tag(s)"
         fi
         
         INDEX=0
